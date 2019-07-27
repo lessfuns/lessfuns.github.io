@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Redis," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="摘要本文简单介绍 redis 常用命令、不同操作系统 redis 安装方法、redis-cluster 集群 “单服务器”与”多服务器”部署原理及其主从配置。">
+<meta name="keywords" content="Redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis简述与cluster集群部署">
+<meta property="og:url" content="http://www.huzzcug.cn/2017/10/18/Redis缓存-cluster集群部署/index.html">
+<meta property="og:site_name" content="Porige">
+<meta property="og:description" content="摘要本文简单介绍 redis 常用命令、不同操作系统 redis 安装方法、redis-cluster 集群 “单服务器”与”多服务器”部署原理及其主从配置。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://www.huzzcug.cn/2017/10/18/Redis缓存-cluster集群部署/redis_clone.jpg">
+<meta property="og:image" content="http://www.huzzcug.cn/2017/10/18/Redis缓存-cluster集群部署/redis_unzip.jpg">
+<meta property="og:image" content="http://www.huzzcug.cn/2017/10/18/Redis缓存-cluster集群部署/redis_run.jpg">
+<meta property="og:image" content="http://www.huzzcug.cn/2017/10/18/Redis缓存-cluster集群部署/redis_connect.jpg">
+<meta property="og:image" content="http://www.huzzcug.cn/2017/10/18/Redis缓存-cluster集群部署/redis_cluster_nodeconf.png">
+<meta property="og:image" content="http://www.huzzcug.cn/2017/10/18/Redis缓存-cluster集群部署/redis_cluster_nodeconf2.png">
+<meta property="og:updated_time" content="2018-04-25T08:46:05.766Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="redis简述与cluster集群部署">
+<meta name="twitter:description" content="摘要本文简单介绍 redis 常用命令、不同操作系统 redis 安装方法、redis-cluster 集群 “单服务器”与”多服务器”部署原理及其主从配置。">
+<meta name="twitter:image" content="http://www.huzzcug.cn/2017/10/18/Redis缓存-cluster集群部署/redis_clone.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'ER3VNOLUEZ',
+      apiKey: 'b8ce4e519b5f792c057e28c817ed7330',
+      indexName: 'porige',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} 条相关结果 使用了 ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.huzzcug.cn/2017/10/18/Redis缓存-cluster集群部署/"/>
+
+
+
+
+
+  <title>redis简述与cluster集群部署 | Porige</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?53e54bb04f2b32887263e076dce1c61e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Porige</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+			
+			
+			  首页
+            
+            
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-document">
+          <a href="/document/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br />
+            
+			
+			
+              文档
+			
+            
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+			
+			
+			  标签
+            
+            
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+			
+			
+			  归档
+            
+            
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.huzzcug.cn/2017/10/18/Redis缓存-cluster集群部署/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="胡振洲">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Porige">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">redis简述与cluster集群部署</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-10-18T18:54:23+08:00">
+                2017-10-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Redis/" itemprop="url" rel="index">
+                    <span itemprop="name">Redis</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-comment-o"></i>
+              </span>
+              
+                <a href="/2017/10/18/Redis缓存-cluster集群部署/#SOHUCS" itemprop="discussionUrl">
+                  <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/10/18/Redis缓存-cluster集群部署/" itemprop="commentsCount"></span>
+                </a>
+              
+            
+          
+
+          
+          
+             <span id="/2017/10/18/Redis缓存-cluster集群部署/" class="leancloud_visitors" data-flag-title="redis简述与cluster集群部署">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>本文简单介绍 redis 常用命令、不同操作系统 redis 安装方法、redis-cluster 集群 “单服务器”与”多服务器”部署原理及其主从配置。<br><a id="more"></a></p>
+<hr>
+<h2 id="redis-简介"><a href="#redis-简介" class="headerlink" title="redis 简介"></a>redis 简介</h2><p>Redis 是一个开源的使用 C 语言编写的支持持久化的 Key-value 型数据库，并内置提供多种语言的API。被称为数据结构服务器，因为值（value）可以是 字符串(String), 哈希(Map), 列表(list), 集合(sets) 和 有序集合(sorted sets)等类型，应用非常广泛。</p>
+<h2 id="redis-安装"><a href="#redis-安装" class="headerlink" title="redis 安装"></a>redis 安装</h2><h3 id="windows-安装"><a href="#windows-安装" class="headerlink" title="windows 安装"></a>windows 安装</h3><p>1、<a href="https://github.com/MicrosoftArchive/redis/releases" target="_blank" rel="noopener">redis 下载</a> ：如图所示，选择 zip 版单机下载。也可以去博主云盘下载</p>
+<div align="center"><img src="redis_clone.jpg" alt="redis_clone"></div><br>2、解压下载后的zip文件，并将解压后的文件夹重命名为redis，解压后的文件夹中的文件目录如下图：<br><div align="center"><img src="redis_unzip.jpg" alt="redis_unzip"></div><br>3、打开 <code>cmd</code> 命令行，打开一个cmd窗口，切换到redis的解压目录，然后运行命令启动 redis服务：<code>redis-server.exe redis.windows.conf</code>，将会在命令行窗口看到如下所示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-server.exe redis.windows.conf</span><br></pre></td></tr></table></figure><br><br><div align="center"><img src="redis_run.jpg" alt="redis_run"></div>
+
+<p>4、再打开一个 cmd窗口，原来的窗口不要关闭。切换到 redis目录下运行命令： <code>redis-cli.exe -h 127.0.0.1 -p 6379</code>，通过客户端连接刚才启动的 redis服务。如下图：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-cli.exe -h 127.0.0.1 -p 6379</span><br></pre></td></tr></table></figure></p>
+<div align="center"><img src="redis_connect.jpg" alt="redis_connect"></div>
+
+<p>5、连接到 redis服务器之后，通过客户端命令测试 redis 服务是否正常<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<h3 id="liunx-安装"><a href="#liunx-安装" class="headerlink" title="liunx 安装"></a>liunx 安装</h3><p><a href="">redis 官网</a> <a href="">redis 下载</a> ,也可以去博主网盘下载，以上下载的 redis 为已经编译好的 redis版本。redis 源码下载你可以去官网或者通过如下命令下载<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ wget http://download.redis.io/releases/redis-4.0.2.tar.gz</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>你还可以通过修改 redis 版本号，下载不同版本的源码包，通过 tar -zxvf redis-4.0.1.tar.gz 解压对应的版本</p>
+</blockquote>
+<h4 id="redis-源码包"><a href="#redis-源码包" class="headerlink" title="redis 源码包"></a>redis 源码包</h4><p>如果您下载的是 redis 源码包，则需要进行如下安装<br>1、目录结构如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">-rw-rw-r--  1 redis redis 127778 Jul 24 21:58 00-RELEASENOTES</span><br><span class="line">-rw-rw-r--  1 redis redis     53 Jul 24 21:58 BUGS</span><br><span class="line">-rw-rw-r--  1 redis redis   1815 Jul 24 21:58 CONTRIBUTING</span><br><span class="line">-rw-rw-r--  1 redis redis   1487 Jul 24 21:58 COPYING</span><br><span class="line">drwxrwxr-x  6 redis redis   4096 Jul 24 21:58 deps</span><br><span class="line">-rw-rw-r--  1 redis redis     11 Jul 24 21:58 INSTALL</span><br><span class="line">-rw-rw-r--  1 redis redis    151 Jul 24 21:58 Makefile</span><br><span class="line">-rw-rw-r--  1 redis redis   4223 Jul 24 21:58 MANIFESTO</span><br><span class="line">-rw-rw-r--  1 redis redis  20530 Jul 24 21:58 README.md</span><br><span class="line">-rw-rw-r--  1 redis redis  57764 Jul 24 21:58 redis.conf</span><br><span class="line">-rwxrwxr-x  1 redis redis    271 Jul 24 21:58 runtest</span><br><span class="line">-rwxrwxr-x  1 redis redis    280 Jul 24 21:58 runtest-cluster</span><br><span class="line">-rwxrwxr-x  1 redis redis    281 Jul 24 21:58 runtest-sentinel</span><br><span class="line">-rw-rw-r--  1 redis redis   7606 Jul 24 21:58 sentinel.conf</span><br><span class="line">drwxrwxr-x  3 redis redis   4096 Jul 24 21:58 src</span><br><span class="line">drwxrwxr-x 10 redis redis   4096 Jul 24 21:58 tests</span><br><span class="line">drwxrwxr-x  8 redis redis   4096 Jul 24 21:58 utils</span><br></pre></td></tr></table></figure></p>
+<p>2、然后执行命令make，进行redis安装。（注：如果提示没有gcc环境，需要先安装gcc环境。gcc是linux下的一个编译工具，是c程序的编译工具。或者以来有gtl环境）<br>3、安装成功之后，编辑 redis.conf 文件，将daemonize no修改为 daemonize yes（默认情况下， redis 不是在后台运行的，如果需要在后台运行，把该项的值更改为 yes），如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">daemonize yes</span><br></pre></td></tr></table></figure></p>
+<h4 id="redis-已安装包"><a href="#redis-已安装包" class="headerlink" title="redis 已安装包"></a>redis 已安装包</h4><p>如果您下载的是 redis 已经 make 编译安装之后的 zip包<br>1、目录结构如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">drwxr-xr-x 6 redis redis 4096 Jan 17  2017 .</span><br><span class="line">drwx------ 8 redis redis 4096 Oct 18 20:01 ..</span><br><span class="line">-rwxr-xr-x 1 redis redis  245 Aug 25  2016 addslot.sh</span><br><span class="line">drwxr-xr-x 2 redis redis 4096 Sep 10  2016 bin</span><br><span class="line">drwxr-xr-x 2 redis redis 4096 Jan 18  2017 conf</span><br><span class="line">-rw-r----- 1 redis redis  613 Dec 12  2016 forget.sh</span><br><span class="line">-rwxr-xr-x 1 redis redis  313 Aug 27  2016 kill.sh</span><br><span class="line">drwxr-xr-x 2 redis redis 4096 Dec 20  2016 logs</span><br><span class="line">drwxr-xr-x 2 redis redis 4096 Jan 18  2017 rdb</span><br><span class="line">-rw-r----- 1 redis redis    6 Jan 17  2017 redis-6379.pid</span><br><span class="line">-rwxr-xr-x 1 redis redis   71 Aug 27  2016 run.sh</span><br></pre></td></tr></table></figure></p>
+<h3 id="redis-基础配置"><a href="#redis-基础配置" class="headerlink" title="redis 基础配置"></a>redis 基础配置</h3><p>安装成功后的目录会生成一个默认的 redis.conf 文件，通过配置该文件，启动 redis 时指定该文件，可以实现 redis 节点的个性化配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line">#绑定ip，需要个性化</span><br><span class="line">bind 132.121.100.36</span><br><span class="line"></span><br><span class="line">#启用保护模式</span><br><span class="line">protected-mode yes</span><br><span class="line"></span><br><span class="line">#绑定的服务端口，需要个性化</span><br><span class="line">port 6379</span><br><span class="line"></span><br><span class="line">tcp-backlog 511</span><br><span class="line">#日志级别debug # verbose# notice# warning</span><br><span class="line">loglevel warning</span><br><span class="line"></span><br><span class="line">#redis连接多久不连接就关闭,单位秒,0表示不断开</span><br><span class="line">timeout 0</span><br><span class="line"></span><br><span class="line">#用于检测连接是否挂死，每多少秒发送一个ack</span><br><span class="line">tcp-keepalive 60</span><br><span class="line"></span><br><span class="line">#默认情况下， redis 不是在后台运行的，如果需要在后台运行，把该项的值更改为 yes；也可以启动 redis 时指定 ./redis-server &amp; 通过 &amp; 使节点以后台方式运行</span><br><span class="line">daemonize no</span><br><span class="line">stop-writes-on-bgsave-error no</span><br><span class="line">rdbcompression no</span><br><span class="line"></span><br><span class="line">#本地文件存储的数据，需要个性化</span><br><span class="line">dbfilename dump-6379.rdb</span><br><span class="line">save &quot;&quot;</span><br><span class="line">#本地数据存储文件dbfilename的目录</span><br><span class="line">dir /data/crm/crmcache1/redis-3.2.0/rdb</span><br><span class="line">#开启日志文件</span><br><span class="line">logfile /data/crm/crmcache1/redis-3.2.0/logs/redis-6379.log</span><br><span class="line"></span><br><span class="line">#pidfile</span><br><span class="line">pidfile /data/crm/crmcache1/redis-3.2.0/redis-6379.pid</span><br><span class="line"></span><br><span class="line">#配置连接数</span><br><span class="line">maxclients 20000</span><br><span class="line"></span><br><span class="line">#配置使用内存</span><br><span class="line">maxmemory 4gb</span><br><span class="line"></span><br><span class="line">#内存过期策略</span><br><span class="line">maxmemory-policy volatile-lru</span><br><span class="line"></span><br><span class="line">#需要个性化</span><br><span class="line">#appendfilename /data/crm/crmcache1/redis-3.2.0/rdb/appendonly-6379.aof</span><br><span class="line">appendfilename appendonly-6379.aof</span><br><span class="line">appendfsync everysec</span><br><span class="line">no-appendfsync-on-rewrite no</span><br><span class="line">auto-aof-rewrite-percentage 100</span><br><span class="line">auto-aof-rewrite-min-size 64mb</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">######集群配置模式</span><br><span class="line">#开启集群模式</span><br><span class="line">cluster-enabled yes</span><br><span class="line">#运行过程中集群信息保存的文件名，不能冲突，需要个性化</span><br><span class="line">cluster-config-file nodes-6379.conf</span><br><span class="line">#集群节点通信内限定的超时时间</span><br><span class="line">cluster-node-timeout 9000</span><br><span class="line">#以追加的方式写数据</span><br><span class="line">appendonly yes</span><br><span class="line">#在某个主节点挂死的情况下，其他主节点仍然可以工作</span><br><span class="line">cluster-require-full-coverage no</span><br></pre></td></tr></table></figure></p>
+<h2 id="redis-常用命令"><a href="#redis-常用命令" class="headerlink" title="redis 常用命令"></a>redis 常用命令</h2><h3 id="启动-redis-节点的三种方式"><a href="#启动-redis-节点的三种方式" class="headerlink" title="启动 redis 节点的三种方式"></a>启动 redis 节点的三种方式</h3><p>1、直接启动：通过加上 <code>&amp;</code>号使redis以后台程序方式运行,也可以通过配置文件配置，使其以后台的方式运行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./redis-server &amp;</span><br></pre></td></tr></table></figure></p>
+<p>2、指定配置文件启动<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./redis-cli /data/crm/redis/redis-3.2.0/conf/redis-6379.conf</span><br></pre></td></tr></table></figure></p>
+<p>3、使用 redis 启动脚本设置开机自启动:启动脚本redis_init_script 位于位于Redis的 /utils/ 目录下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#大致浏览下该启动脚本，发现redis习惯性用监听的端口名作为配置文件等命名，我们后面也遵循这个约定。</span><br><span class="line">#redis服务器监听的端口</span><br><span class="line">REDISPORT=6379</span><br><span class="line">#服务端所处位置，在make install后默认存放与`/usr/local/bin/redis-server`，如果未make install则需要修改该路径，下同。</span><br><span class="line">EXEC=/usr/local/bin/redis-server</span><br><span class="line">#客户端位置</span><br><span class="line">CLIEXEC=/usr/local/bin/redis-cli</span><br><span class="line">#Redis的PID文件位置</span><br><span class="line">PIDFILE=/var/run/redis_$&#123;REDISPORT&#125;.pid</span><br><span class="line">#配置文件位置，需要修改</span><br><span class="line">CONF=&quot;/etc/redis/$&#123;REDISPORT&#125;.conf&quot;</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>开机自启动的相关配置，可以参考下这篇博客(<a href="https://git-scm.com/downloads" target="_blank" rel="noopener">链接</a>) </p>
+</blockquote>
+<h2 id="redis-cluster-集群搭建"><a href="#redis-cluster-集群搭建" class="headerlink" title="redis-cluster 集群搭建"></a>redis-cluster 集群搭建</h2><h3 id="单服务器一主一从"><a href="#单服务器一主一从" class="headerlink" title="单服务器一主一从"></a>单服务器一主一从</h3><p>1、如果下载的包是已经 make 过的，或者从其他集群 copy 过来的，则不需要在 make 安装</p>
+<div align="center"><img src="redis_cluster_nodeconf.png" alt="redis_cluster_nodeconf"></div><br><div align="center"><img src="redis_cluster_nodeconf2.png" alt="redis_cluster_nodeconf2"></div>
+
+<p>2、一主一从搭建 需要 <code>redis-3.2.0</code>[已编译的安装包]解压缩到两个不同的目录作为<code>一主</code>、<code>一从</code>，然后分别设置相应 redis 下的 <code>*.conf</code>配置文件</p>
+<blockquote>
+<p>此种搭建方式适合生产大型项目缓存集群的搭建，一个 redis 包作为一个 cluster集群的节点。<br>redis-server 是支持通过指定配置文件启动的，不同的配置文件对应不同的端口，所以同一个 redis 包 也可以配置多个节点组件集群， 搭建方法可参照博客(<a href="http://www.cnblogs.com/yuanermen/p/5717885.html" target="_blank" rel="noopener">链接</a>)</p>
+</blockquote>
+<p>3、在redis的目录下创建rdb目录：mkdir -p /data/crm/crmcache1/redis-3.2.0/rdb，如果是从其他集群拿过来的文件，记得要删除rdb/下的文件</p>
+<blockquote>
+<p>rdb 为 redis 持久化文件存放目录，包括 当前节点在集群的持久化信息<code>rdb`</code>aof<code>，以及记录节点</code>nodes-6379.conf`在cluster集群中的角色，这些信息需要删除重新生成，否则启动结点时会去加载</p>
+</blockquote>
+<p>4、修改run.sh和kill.sh文件，将相关参数更改为安装的实际参数：</p>
+<blockquote>
+<p>如果您是 make安装的，将没有这两个文件，无需修改。这是自行启动脚本</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">run.sh----修改启动的 conf文件，修改的地方如下</span><br><span class="line">$DIR/bin/redis-server $DIR/conf/redis-6379.conf &amp;</span><br><span class="line"></span><br><span class="line">kill.sh----修改对应节点的pid信息，修改的地方如下</span><br><span class="line">PID=`cat $DIR/redis-6379.pid`</span><br></pre></td></tr></table></figure>
+<p>5、启动新建的两个节点，通过如下任何一个命令检查节点是否启动成功<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[redis@localhost redis-3.2.0]$ ps -ef  | grep redis</span><br><span class="line">redis     9974     1  0 17:33 pts/3    00:00:00 ./bin/redis-server 132.126.2.235:7379 [cluster]</span><br><span class="line">redis     9980     1  0 17:33 pts/3    00:00:00 ./bin/redis-server 132.126.2.235:6379 [cluster]</span><br><span class="line">[redis@localhost redis-3.2.0]$ ps -aux  | grep redis</span><br><span class="line">redis     9974     1  0 17:33 pts/3    00:00:00 ./bin/redis-server 132.126.2.235:7379 [cluster]</span><br><span class="line">redis     9980     1  0 17:33 pts/3    00:00:00 ./bin/redis-server 132.126.2.235:6379 [cluster]</span><br></pre></td></tr></table></figure></p>
+<p>6、组件集群、主从配置、槽指派<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure></p>
+<h3 id="两服务器两主四从"><a href="#两服务器两主四从" class="headerlink" title="两服务器两主四从"></a>两服务器两主四从</h3><h2 id="redis-cluster-集群原理简述"><a href="#redis-cluster-集群原理简述" class="headerlink" title="redis-cluster 集群原理简述"></a>redis-cluster 集群原理简述</h2><h2 id="redis-cluster-集群性能分析"><a href="#redis-cluster-集群性能分析" class="headerlink" title="redis-cluster 集群性能分析"></a>redis-cluster 集群性能分析</h2>
+      
+    </div>
+    
+    
+    
+
+    
+      <div>
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/wechat-qcode.jpg" alt="胡振洲 wechat" style="width: 200px; max-width: 100%;"/>
+    <div>扫一扫上面的微信二维码，关注我的个人微信公众号</div>
+</div>
+
+      </div>
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Redis/" rel="tag"># Redis</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/29/应用安全-公共框架漏洞/" rel="next" title="应用安全-公共框架漏洞">
+                <i class="fa fa-chevron-left"></i> 应用安全-公共框架漏洞
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/11/18/Gradle-构建工具篇/" rel="prev" title="Gradle-构建工具篇">
+                Gradle-构建工具篇 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="SOHUCS"></div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="胡振洲" />
+            
+              <p class="site-author-name" itemprop="name">胡振洲</p>
+              <p class="site-description motion-element" itemprop="description">滴水穿石</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">46</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/huzhenzhou" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="http://theme-next.iissnan.com/getting-started.html" target="_blank" title="Next">
+                    
+                      <i class="fa fa-fw fa-opera"></i>Next</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://hexo.io/docs/writing.html" target="_blank" title="Hexo">
+                    
+                      <i class="fa fa-fw fa-ra"></i>Hexo</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="http://note.youdao.com/iyoudao/?p=2411&vendor=unsilent14" target="_blank" title="Markdown">
+                    
+                      <i class="fa fa-fw fa-leanpub"></i>Markdown</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#摘要"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redis-简介"><span class="nav-number">2.</span> <span class="nav-text">redis 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redis-安装"><span class="nav-number">3.</span> <span class="nav-text">redis 安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#windows-安装"><span class="nav-number">3.1.</span> <span class="nav-text">windows 安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#liunx-安装"><span class="nav-number">3.2.</span> <span class="nav-text">liunx 安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#redis-源码包"><span class="nav-number">3.2.1.</span> <span class="nav-text">redis 源码包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#redis-已安装包"><span class="nav-number">3.2.2.</span> <span class="nav-text">redis 已安装包</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redis-基础配置"><span class="nav-number">3.3.</span> <span class="nav-text">redis 基础配置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redis-常用命令"><span class="nav-number">4.</span> <span class="nav-text">redis 常用命令</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#启动-redis-节点的三种方式"><span class="nav-number">4.1.</span> <span class="nav-text">启动 redis 节点的三种方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redis-cluster-集群搭建"><span class="nav-number">5.</span> <span class="nav-text">redis-cluster 集群搭建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#单服务器一主一从"><span class="nav-number">5.1.</span> <span class="nav-text">单服务器一主一从</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#两服务器两主四从"><span class="nav-number">5.2.</span> <span class="nav-text">两服务器两主四从</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redis-cluster-集群原理简述"><span class="nav-number">6.</span> <span class="nav-text">redis-cluster 集群原理简述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redis-cluster-集群性能分析"><span class="nav-number">7.</span> <span class="nav-text">redis-cluster 集群性能分析</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">胡振洲</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+    <script type="text/javascript">
+    (function(){
+      var appid = 'cyt5yVFc6';
+      var conf = '862d348fdea048dde058283903dfe7bf';
+      var width = window.innerWidth || document.documentElement.clientWidth;
+      if (width < 960) {
+      window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){
+        window.changyan.api.config({appid:appid,conf:conf})});
+      }
+    })();
+    </script>
+    <script type="text/javascript" src="https://assets.changyan.sohu.com/upload/plugins/plugins.count.js"></script>
+  
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.3"></script>
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("VgdUzhN2zLs50JF6Fd2C1vqj-gzGzoHsz", "F3PJ8K5fuaEaqoQbCrXAUegI");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

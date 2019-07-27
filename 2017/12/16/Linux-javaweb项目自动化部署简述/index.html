@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="自动化部署," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="摘要大型项目的上线往往需要一批人甚至几批人的昼夜开发测试，在这过程当中，版本的迭代与项目的部署显得非常重要，尤其是项目快上线前期，测试频繁BUG量增加时，要求版本的迭代更新频繁，此时项目的自动部署变得异常重要，手动部署不仅耗时耗力，在面临环境差异性部署时容易出错。部署的过程往往涉及到应用、环境、配置文件和部署流程，自动化部署可以提高总体质量和效率，非常有必要。Linux-javaweb自动化部署系">
+<meta name="keywords" content="自动化部署">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux-javaweb项目自动化部署简述">
+<meta property="og:url" content="http://www.huzzcug.cn/2017/12/16/Linux-javaweb项目自动化部署简述/index.html">
+<meta property="og:site_name" content="Porige">
+<meta property="og:description" content="摘要大型项目的上线往往需要一批人甚至几批人的昼夜开发测试，在这过程当中，版本的迭代与项目的部署显得非常重要，尤其是项目快上线前期，测试频繁BUG量增加时，要求版本的迭代更新频繁，此时项目的自动部署变得异常重要，手动部署不仅耗时耗力，在面临环境差异性部署时容易出错。部署的过程往往涉及到应用、环境、配置文件和部署流程，自动化部署可以提高总体质量和效率，非常有必要。Linux-javaweb自动化部署系">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://www.huzzcug.cn/2017/12/16/Linux-javaweb项目自动化部署简述/svnant_help.png">
+<meta property="og:updated_time" content="2018-04-25T08:46:05.760Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux-javaweb项目自动化部署简述">
+<meta name="twitter:description" content="摘要大型项目的上线往往需要一批人甚至几批人的昼夜开发测试，在这过程当中，版本的迭代与项目的部署显得非常重要，尤其是项目快上线前期，测试频繁BUG量增加时，要求版本的迭代更新频繁，此时项目的自动部署变得异常重要，手动部署不仅耗时耗力，在面临环境差异性部署时容易出错。部署的过程往往涉及到应用、环境、配置文件和部署流程，自动化部署可以提高总体质量和效率，非常有必要。Linux-javaweb自动化部署系">
+<meta name="twitter:image" content="http://www.huzzcug.cn/2017/12/16/Linux-javaweb项目自动化部署简述/svnant_help.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'ER3VNOLUEZ',
+      apiKey: 'b8ce4e519b5f792c057e28c817ed7330',
+      indexName: 'porige',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} 条相关结果 使用了 ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.huzzcug.cn/2017/12/16/Linux-javaweb项目自动化部署简述/"/>
+
+
+
+
+
+  <title>Linux-javaweb项目自动化部署简述 | Porige</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?53e54bb04f2b32887263e076dce1c61e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Porige</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+			
+			
+			  首页
+            
+            
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-document">
+          <a href="/document/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br />
+            
+			
+			
+              文档
+			
+            
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+			
+			
+			  标签
+            
+            
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+			
+			
+			  归档
+            
+            
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.huzzcug.cn/2017/12/16/Linux-javaweb项目自动化部署简述/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="胡振洲">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Porige">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Linux-javaweb项目自动化部署简述</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-16T20:44:20+08:00">
+                2017-12-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/自动化部署/" itemprop="url" rel="index">
+                    <span itemprop="name">自动化部署</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-comment-o"></i>
+              </span>
+              
+                <a href="/2017/12/16/Linux-javaweb项目自动化部署简述/#SOHUCS" itemprop="discussionUrl">
+                  <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/12/16/Linux-javaweb项目自动化部署简述/" itemprop="commentsCount"></span>
+                </a>
+              
+            
+          
+
+          
+          
+             <span id="/2017/12/16/Linux-javaweb项目自动化部署简述/" class="leancloud_visitors" data-flag-title="Linux-javaweb项目自动化部署简述">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>大型项目的上线往往需要一批人甚至几批人的昼夜开发测试，在这过程当中，版本的迭代与项目的部署显得非常重要，尤其是项目快上线前期，测试频繁BUG量增加时，要求版本的迭代更新频繁，此时项目的自动部署变得异常重要，手动部署不仅耗时耗力，在面临环境差异性部署时容易出错。部署的过程往往涉及到应用、环境、配置文件和部署流程，自动化部署可以提高总体质量和效率，非常有必要。<br>Linux-javaweb自动化部署系列仅提供一个自动部署的途径。<br><a id="more"></a></p>
+<hr>
+<h2 id="依赖软件"><a href="#依赖软件" class="headerlink" title="依赖软件"></a>依赖软件</h2><h3 id="JDK"><a href="#JDK" class="headerlink" title="JDK"></a>JDK</h3><p>1、<code>JDK版本</code>取 1.7系列<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[jenkins@localhost ~]$ java -version</span><br><span class="line">java version &quot;1.7.0_71&quot;</span><br><span class="line">Java(TM) SE Runtime Environment (build 1.7.0_71-b14)</span><br><span class="line">Java HotSpot(TM) 64-Bit Server VM (build 24.71-b01, mixed mode)</span><br></pre></td></tr></table></figure></p>
+<h3 id="gradle"><a href="#gradle" class="headerlink" title="gradle"></a>gradle</h3><p>1、[gradle 官网[(<a href="https://gradle.org/" target="_blank" rel="noopener">https://gradle.org/</a>) 下载，<a href="http://pan.baidu.com/s/1nvObnh3" target="_blank" rel="noopener">gradle 百度网盘下载</a> 密码：3b6n<br>2、配置环境变量<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GRADLE_HOME=/data/crm/jenkins/.installdir/gradle-4.1; export GRADLE_HOME</span><br><span class="line">export PATH=$&#123;GRADLE_HOME&#125;/bin:$PATH</span><br></pre></td></tr></table></figure></p>
+<p>3、命令<code>gradle -v</code>检测配置是否成功<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[jenkins@localhost ~]$ gradle -v</span><br><span class="line"></span><br><span class="line">------------------------------------------------------------</span><br><span class="line">Gradle 4.1</span><br><span class="line">------------------------------------------------------------</span><br><span class="line"></span><br><span class="line">Build time:   2017-08-07 14:38:48 UTC</span><br><span class="line">Revision:     941559e020f6c357ebb08d5c67acdb858a3defc2</span><br><span class="line">Groovy:       2.4.11</span><br><span class="line">Ant:          Apache Ant(TM) version 1.9.6 compiled on June 29 2015</span><br><span class="line">JVM:          1.7.0_71 (Oracle Corporation 24.71-b01)</span><br><span class="line">OS:           Linux 2.6.32-504.el6.x86_64 amd64</span><br></pre></td></tr></table></figure></p>
+<h3 id="svnant"><a href="#svnant" class="headerlink" title="svnant"></a>svnant</h3><p>1、<code>svnant</code> 使用 <code>1.3.x</code>系列。<a href="http://subclipse.tigris.org/svnant.html" target="_blank" rel="noopener">svnant 官网下载</a>，<a href="http://pan.baidu.com/s/1c1C8cKC" target="_blank" rel="noopener">svnant百度网盘下载</a> 密码：s78j<br>2、<code>svnant</code> 不需要配置环境变量，<code>gralde</code> 中Project隐式类可以通过taskdef任务为 ant变量动态装载 svnant。官网的 所有jar包，如下任务可实现装在过程：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//SvnAnt 1.3.x (bound against subversion 1.6.x) Release，即内置subversion，版本根据官方文档而定</span><br><span class="line">ext &#123;</span><br><span class="line">    ant.taskdef(resource: &apos;org/tigris/subversion/svnant/svnantlib.xml&apos;) &#123;</span><br><span class="line">        classpath &#123;</span><br><span class="line">            fileset(dir: &quot;$&#123;svnant_lib_path&#125;&quot;, includes: &apos;*.jar&apos;)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>3、使用 svnant需要注意如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">## SvnAnt 有内置 subversion，所以集成了SVN的部分功能，但命令与SVN原始命令多少有些不同</span><br><span class="line">## SvnAnt 内置的 subversion 版本之间存在依赖对应关系，如官方文档所示</span><br></pre></td></tr></table></figure></p>
+<p><div align="center"><img src="svnant_help.png" alt="SvnAnt_help"></div><br>4、<a href="http://www.huzzcug.cn/officialdoc/svnant/1.3.1/doc/svntask.html">svnant命令集</a> <a href="http://www.huzzcug.cn/officialdoc/svnant/1.3.1/doc/svntask.html">http://www.huzzcug.cn/officialdoc/svnant/1.3.1/doc/svntask.html</a></p>
+<h3 id="maven"><a href="#maven" class="headerlink" title="maven"></a>maven</h3><p>1、环境变量配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MAVEN_HOME=/data/crm/jenkins/.installdir/apache-maven-3.3.9;export MAVEN_HOME</span><br><span class="line">export PATH=$&#123;MAVEN_HOME&#125;/bin:$PATH</span><br></pre></td></tr></table></figure></p>
+<p>2、命令<code>mvn -v</code> 验证是否配置成功<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[jenkins@localhost ~]$ mvn -v</span><br><span class="line">Apache Maven 3.3.9 (bb52d8502b132ec0a5a3f4c09453c07478323dc5; 2015-11-11T00:41:47+08:00)</span><br><span class="line">Maven home: /data/crm/jenkins/.installdir/apache-maven-3.3.9</span><br><span class="line">Java version: 1.7.0_71, vendor: Oracle Corporation</span><br><span class="line">Java home: /data/crm/jenkins/.installdir/jdk1.7.0_71/jre</span><br><span class="line">Default locale: en_US, platform encoding: UTF-8</span><br><span class="line">OS name: &quot;linux&quot;, version: &quot;2.6.32-504.el6.x86_64&quot;, arch: &quot;amd64&quot;, family: &quot;unix&quot;</span><br></pre></td></tr></table></figure></p>
+<p>3、有 maven相关的请继续关注 maven章节</p>
+<h3 id="jenkins篇待续（单独篇续写）"><a href="#jenkins篇待续（单独篇续写）" class="headerlink" title="jenkins篇待续（单独篇续写）"></a>jenkins篇待续（单独篇续写）</h3><h2 id="部署原理"><a href="#部署原理" class="headerlink" title="部署原理"></a>部署原理</h2><h3 id="原始构建项目大概需要哪些步骤"><a href="#原始构建项目大概需要哪些步骤" class="headerlink" title="原始构建项目大概需要哪些步骤"></a>原始构建项目大概需要哪些步骤</h3><p>依赖管理、测试、打包、发布(上传ftp)</p>
+<h3 id="原始构建项目大概需要哪些大概描述下每个元素起到的作用"><a href="#原始构建项目大概需要哪些大概描述下每个元素起到的作用" class="headerlink" title="原始构建项目大概需要哪些大概描述下每个元素起到的作用"></a>原始构建项目大概需要哪些大概描述下每个元素起到的作用</h3><h3 id="以及整改部署原理流程图"><a href="#以及整改部署原理流程图" class="headerlink" title="以及整改部署原理流程图"></a>以及整改部署原理流程图</h3><p>ant:编译、测试、打包<br>maven:依赖管理、发布<br>gradle:groovy使用特定语言管理脚本</p>
+<h3 id="gradle-补充待续"><a href="#gradle-补充待续" class="headerlink" title="gradle 补充待续"></a>gradle 补充待续</h3><p>待续篇还有如果用 使用 idea编辑器 测试编写的 gradle 构建脚本</p>
+<h3 id="antsvn-优化待续"><a href="#antsvn-优化待续" class="headerlink" title="antsvn 优化待续"></a>antsvn 优化待续</h3><p>antsvn提供的命令集具体含义及其使用场景</p>
+<h3 id="构建脚本上传-github-待续"><a href="#构建脚本上传-github-待续" class="headerlink" title="构建脚本上传 github 待续"></a>构建脚本上传 github 待续</h3>
+      
+    </div>
+    
+    
+    
+
+    
+      <div>
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/wechat-qcode.jpg" alt="胡振洲 wechat" style="width: 200px; max-width: 100%;"/>
+    <div>扫一扫上面的微信二维码，关注我的个人微信公众号</div>
+</div>
+
+      </div>
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/自动化部署/" rel="tag"># 自动化部署</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/18/Gradle-构建工具篇/" rel="next" title="Gradle-构建工具篇">
+                <i class="fa fa-chevron-left"></i> Gradle-构建工具篇
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/23/Redis缓存-菜鸟归总/" rel="prev" title="Redis缓存-菜鸟归总">
+                Redis缓存-菜鸟归总 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="SOHUCS"></div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="胡振洲" />
+            
+              <p class="site-author-name" itemprop="name">胡振洲</p>
+              <p class="site-description motion-element" itemprop="description">滴水穿石</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">46</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/huzhenzhou" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="http://theme-next.iissnan.com/getting-started.html" target="_blank" title="Next">
+                    
+                      <i class="fa fa-fw fa-opera"></i>Next</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://hexo.io/docs/writing.html" target="_blank" title="Hexo">
+                    
+                      <i class="fa fa-fw fa-ra"></i>Hexo</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="http://note.youdao.com/iyoudao/?p=2411&vendor=unsilent14" target="_blank" title="Markdown">
+                    
+                      <i class="fa fa-fw fa-leanpub"></i>Markdown</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#摘要"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#依赖软件"><span class="nav-number">2.</span> <span class="nav-text">依赖软件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#JDK"><span class="nav-number">2.1.</span> <span class="nav-text">JDK</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gradle"><span class="nav-number">2.2.</span> <span class="nav-text">gradle</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#svnant"><span class="nav-number">2.3.</span> <span class="nav-text">svnant</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#maven"><span class="nav-number">2.4.</span> <span class="nav-text">maven</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#jenkins篇待续（单独篇续写）"><span class="nav-number">2.5.</span> <span class="nav-text">jenkins篇待续（单独篇续写）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#部署原理"><span class="nav-number">3.</span> <span class="nav-text">部署原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#原始构建项目大概需要哪些步骤"><span class="nav-number">3.1.</span> <span class="nav-text">原始构建项目大概需要哪些步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原始构建项目大概需要哪些大概描述下每个元素起到的作用"><span class="nav-number">3.2.</span> <span class="nav-text">原始构建项目大概需要哪些大概描述下每个元素起到的作用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#以及整改部署原理流程图"><span class="nav-number">3.3.</span> <span class="nav-text">以及整改部署原理流程图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gradle-补充待续"><span class="nav-number">3.4.</span> <span class="nav-text">gradle 补充待续</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#antsvn-优化待续"><span class="nav-number">3.5.</span> <span class="nav-text">antsvn 优化待续</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#构建脚本上传-github-待续"><span class="nav-number">3.6.</span> <span class="nav-text">构建脚本上传 github 待续</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">胡振洲</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+    <script type="text/javascript">
+    (function(){
+      var appid = 'cyt5yVFc6';
+      var conf = '862d348fdea048dde058283903dfe7bf';
+      var width = window.innerWidth || document.documentElement.clientWidth;
+      if (width < 960) {
+      window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){
+        window.changyan.api.config({appid:appid,conf:conf})});
+      }
+    })();
+    </script>
+    <script type="text/javascript" src="https://assets.changyan.sohu.com/upload/plugins/plugins.count.js"></script>
+  
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.3"></script>
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("VgdUzhN2zLs50JF6Fd2C1vqj-gzGzoHsz", "F3PJ8K5fuaEaqoQbCrXAUegI");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

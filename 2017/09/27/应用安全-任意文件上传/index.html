@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="应用安全," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="摘要任意文件上传漏洞简洁的说是指网络攻击者通过上传了一个可执行的文件到服务器并执行，上传的文件可以是木马，病毒，恶意脚本或者WebShell等。这是最直接和有效的攻击手段，技术门槛比较低。">
+<meta name="keywords" content="应用安全">
+<meta property="og:type" content="article">
+<meta property="og:title" content="应用安全-任意文件上传">
+<meta property="og:url" content="http://www.huzzcug.cn/2017/09/27/应用安全-任意文件上传/index.html">
+<meta property="og:site_name" content="Porige">
+<meta property="og:description" content="摘要任意文件上传漏洞简洁的说是指网络攻击者通过上传了一个可执行的文件到服务器并执行，上传的文件可以是木马，病毒，恶意脚本或者WebShell等。这是最直接和有效的攻击手段，技术门槛比较低。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-04-25T08:46:05.791Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="应用安全-任意文件上传">
+<meta name="twitter:description" content="摘要任意文件上传漏洞简洁的说是指网络攻击者通过上传了一个可执行的文件到服务器并执行，上传的文件可以是木马，病毒，恶意脚本或者WebShell等。这是最直接和有效的攻击手段，技术门槛比较低。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'ER3VNOLUEZ',
+      apiKey: 'b8ce4e519b5f792c057e28c817ed7330',
+      indexName: 'porige',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} 条相关结果 使用了 ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.huzzcug.cn/2017/09/27/应用安全-任意文件上传/"/>
+
+
+
+
+
+  <title>应用安全-任意文件上传 | Porige</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?53e54bb04f2b32887263e076dce1c61e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Porige</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+			
+			
+			  首页
+            
+            
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-document">
+          <a href="/document/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-book"></i> <br />
+            
+			
+			
+              文档
+			
+            
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+			
+			
+			  标签
+            
+            
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+			
+			
+			  归档
+            
+            
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.huzzcug.cn/2017/09/27/应用安全-任意文件上传/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="胡振洲">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Porige">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">应用安全-任意文件上传</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-27T16:20:10+08:00">
+                2017-09-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/应用安全/" itemprop="url" rel="index">
+                    <span itemprop="name">应用安全</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+              <span class="post-meta-divider">|</span>
+              <span class="post-meta-item-icon">
+                <i class="fa fa-comment-o"></i>
+              </span>
+              
+                <a href="/2017/09/27/应用安全-任意文件上传/#SOHUCS" itemprop="discussionUrl">
+                  <span id="changyan_count_unit" class="post-comments-count hc-comment-count" data-xid="2017/09/27/应用安全-任意文件上传/" itemprop="commentsCount"></span>
+                </a>
+              
+            
+          
+
+          
+          
+             <span id="/2017/09/27/应用安全-任意文件上传/" class="leancloud_visitors" data-flag-title="应用安全-任意文件上传">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>任意文件上传漏洞简洁的说是指网络攻击者通过上传了一个可执行的文件到服务器并执行，上传的文件可以是木马，病毒，恶意脚本或者WebShell等。这是最直接和有效的攻击手段，技术门槛比较低。<br><a id="more"></a></p>
+<hr>
+<h2 id="webshell-简介"><a href="#webshell-简介" class="headerlink" title="webshell 简介"></a>webshell 简介</h2><p>webshell就是以asp、php、jsp或者cgi等网页文件形式存在的一种命令执行环境，也可以将其称做为一种网页后门。黑客在入侵了一个网站后，通常会将asp或php后门文件与网站服务器WEB目录下正常的网页文件混在一起，然后就可以使用浏览器来访问asp或者php后门，得到一个命令执行环境，以达到控制网站服务器的目的。<br>webshell在任意文件上传的漏洞中，相对比较常见，危害也是相当大，通过伪装成web系统的本身的可执行文件，为以后渗透系统留下后门，可随时可持续的渗透系统，并通过这些可执行脚本或者网页(可以上传下载或者修改文件，操作数据库，执行任意命令等)，容易的侵入到系统的各个部分，危害相当巨大。</p>
+<h2 id="上传漏洞的原理"><a href="#上传漏洞的原理" class="headerlink" title="上传漏洞的原理"></a>上传漏洞的原理</h2><p>文件上传功能没有严格限制上传的文件后缀以及文件类型，导致攻击者向某个<strong>可通过Web访问的目录</strong>上传一些可执行文件。根据具体漏洞的差异，此处上传的脚本可以是正常后缀的PHP，ASP以及JSP脚本，也可以是篡改后缀后的这几类脚本。</p>
+<h3 id="入侵手段"><a href="#入侵手段" class="headerlink" title="入侵手段"></a>入侵手段</h3><p>1、上传任意PHP文件，并能够将这些文件传递给PHP解释器，就可以在远程服务器上执行任意PHP脚本。上传任意PHP文件【或者可执行文件】，并能够将这些文件传递给PHP解释器，就可以在远程服务器上执行任意PHP脚本。<br>2、上传文件是病毒或者木马时，主要用于诱骗用户或者管理员下载执行或者直接自动运行；<br>3、上传文件是WebShell时，攻击者可通过这些网页后门执行命令并控制服务器；<br>4、上传文件是其他恶意脚本时，攻击者可直接执行脚本进行攻击；<br>5、上传文件是恶意图片时，图片中可能包含了脚本，加载或者点击这些图片时脚本会悄无声息的执行；<br>6、上传文件是伪装成正常后缀的恶意脚本时，攻击者可借助本地文件包含漏洞(Local File Include)执行该文件。如将bad.php文件改名为bad.doc上传到服务器，再通过PHP的include，include_once，require，require_once等函数包含执行。</p>
+<h3 id="被入侵原因"><a href="#被入侵原因" class="headerlink" title="被入侵原因"></a>被入侵原因</h3><p>1、文件上传时检查不严。没有进行文件格式检查。一些应用仅仅在客户端进行了检查，而在专业的攻击者眼里几乎所有的客户端检查都等于没有检查，攻击者可以通过NC，Fiddler等断点上传工具轻松绕过客户端的检查。一些应用虽然在服务器端进行了黑名单检查，但是却可能忽略了大小写，如将.php改为.Php即可绕过检查；一些应用虽然在服务器端进行了白名单检查却忽略了%00截断符，如应用本来只允许上传jpg图片，那么可以构造文件名为xxx.php%00.jpg,其中%00为十六进制的0x00字符，.jpg骗过了应用的上传文件类型检测，但对于服务器来说，因为%00字符截断的关系，最终上传的文件变成了xxx.php。<br>2、文件上传后修改文件名时处理不当。一些应用在服务器端进行了完整的黑名单和白名单过滤，在修改已上传文件文件名时却百密一疏，允许用户修改文件后缀。如应用只能上传.doc文件时攻击者可以先将.php文件后缀修改为.doc，成功上传后在修改文件名时将后缀改回.php。<br>3、使用第三方插件时引入。好多应用都引用了带有文件上传功能的第三方插件，这些插件的文件上传功能实现上可能有漏洞，攻击者可通过这些漏洞进行文件上传攻击。如著名的博客平台WordPress就有丰富的插件，而这些插件中每年都会被挖掘出大量的文件上传漏洞。</p>
+<h2 id="上传漏洞的防御"><a href="#上传漏洞的防御" class="headerlink" title="上传漏洞的防御"></a>上传漏洞的防御</h2><h3 id="入侵角度分析"><a href="#入侵角度分析" class="headerlink" title="入侵角度分析"></a>入侵角度分析</h3><p>首先，上传的文件能够被Web容器解释执行。所以文件上传后所在的目录要是Web容器所覆盖到的路径。<br>其次，用户能够从Web上访问这个文件。如果文件上传了，但用户无法通过Web访问，或者无法得到Web容器解释这个脚本，那么也不能称之为漏洞。<br>最后，用户上传的文件若被安全检查、格式化、图片压缩等功能改变了内容，则也可能导致攻击不成功。</p>
+<h3 id="防御的方法"><a href="#防御的方法" class="headerlink" title="防御的方法"></a>防御的方法</h3><p>1、文件上传的目录设置为不可执行</p>
+<blockquote>
+<p>只要web容器无法解析该目录下面的文件，即使攻击者上传了脚本文件，服务器本身也不会受到影响，因此这一点至关重要。</p>
+</blockquote>
+<p>2、判断文件类型</p>
+<blockquote>
+<p>在判断文件类型时，可以结合使用MIME Type、后缀检查等方式。在文件类型检查中，强烈推荐白名单方式，黑名单的方式已经无数次被证明是不可靠的。此外，对于图片的处理，可以使用压缩函数或者resize函数，在处理图片的同时破坏图片中可能包含的HTML代码。</p>
+</blockquote>
+<p>3、使用随机数改写文件名和文件路径</p>
+<blockquote>
+<p>文件上传如果要执行代码，则需要用户能够访问到这个文件。在某些环境中，用户能上传，但不能访问。如果应用了随机数改写了文件名和路径，将极大地增加攻击的成本。再来就是像shell.php.rar.rar和crossdomain.xml这种文件，都将因为重命名而无法攻击。</p>
+</blockquote>
+<p>4、单独设置文件服务器的域名</p>
+<blockquote>
+<p>由于浏览器同源策略的关系，一系列客户端攻击将失效，比如上传crossdomain.xml、上传包含Javascript的XSS利用等问题将得到解决。</p>
+</blockquote>
+<h2 id="系统各阶段防御"><a href="#系统各阶段防御" class="headerlink" title="系统各阶段防御"></a>系统各阶段防御</h2><h3 id="系统开发阶段"><a href="#系统开发阶段" class="headerlink" title="系统开发阶段"></a>系统开发阶段</h3><h3 id="系统运行阶段"><a href="#系统运行阶段" class="headerlink" title="系统运行阶段"></a>系统运行阶段</h3><h3 id="安全设备防御"><a href="#安全设备防御" class="headerlink" title="安全设备防御"></a>安全设备防御</h3><h2 id="漏洞防御实例"><a href="#漏洞防御实例" class="headerlink" title="漏洞防御实例"></a>漏洞防御实例</h2><h3 id="文件类型判断"><a href="#文件类型判断" class="headerlink" title="文件类型判断"></a>文件类型判断</h3><p>1.应用层判断上传文件扩展名<br>2.应用层/控制层控制上传文件的大小<br>3.控制层过滤上传文件的Content-Type,struts的控制方式如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;action name=&quot;uploadAndDelFile&quot; class=&quot;cameraAction&quot; method=&quot;uploadAndDelFile&quot;&gt;</span><br><span class="line">	&lt;interceptor-ref name=&quot;defaultStack&quot;&gt;</span><br><span class="line">		&lt;!-- 设置单个上传文件的扩展名为jpg，多个扩展名之间通过&quot;,&quot;号分隔 --&gt;</span><br><span class="line">		&lt;param name=&quot;fileUpload.allowedExtensions&quot;&gt;.jpg,.JPG&lt;/param&gt;</span><br><span class="line">		&lt;!-- 配置允许上传的文件类型，多个用&quot;,&quot;分隔 --&gt;</span><br><span class="line">		&lt;param name=&quot;fileUpload.allowedTypes&quot;&gt;</span><br><span class="line">			image/jpeg,image/pjpeg,image/png,image/x-png,image/gif,image/bmp</span><br><span class="line">		&lt;/param&gt;</span><br><span class="line">	&lt;/interceptor-ref&gt; </span><br><span class="line">&lt;/action&gt;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+      <div>
+        <div id="wechat_subscriber" style="display: block; padding: 10px 0; margin: 20px auto; width: 100%; text-align: center">
+    <img id="wechat_subscriber_qcode" src="/uploads/wechat-qcode.jpg" alt="胡振洲 wechat" style="width: 200px; max-width: 100%;"/>
+    <div>扫一扫上面的微信二维码，关注我的个人微信公众号</div>
+</div>
+
+      </div>
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/应用安全/" rel="tag"># 应用安全</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/27/chrome浏览器-google-plugins/" rel="next" title="chrome浏览器-google-plugins">
+                <i class="fa fa-chevron-left"></i> chrome浏览器-google-plugins
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/09/27/应用安全-撞库攻击/" rel="prev" title="应用安全-撞库攻击">
+                应用安全-撞库攻击 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  
+    <div class="comments" id="comments">
+      <div id="SOHUCS"></div>
+    </div>
+  
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/avatar.jpg"
+                alt="胡振洲" />
+            
+              <p class="site-author-name" itemprop="name">胡振洲</p>
+              <p class="site-description motion-element" itemprop="description">滴水穿石</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">46</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/huzhenzhou" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="http://theme-next.iissnan.com/getting-started.html" target="_blank" title="Next">
+                    
+                      <i class="fa fa-fw fa-opera"></i>Next</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://hexo.io/docs/writing.html" target="_blank" title="Hexo">
+                    
+                      <i class="fa fa-fw fa-ra"></i>Hexo</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="http://note.youdao.com/iyoudao/?p=2411&vendor=unsilent14" target="_blank" title="Markdown">
+                    
+                      <i class="fa fa-fw fa-leanpub"></i>Markdown</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#摘要"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#webshell-简介"><span class="nav-number">2.</span> <span class="nav-text">webshell 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#上传漏洞的原理"><span class="nav-number">3.</span> <span class="nav-text">上传漏洞的原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#入侵手段"><span class="nav-number">3.1.</span> <span class="nav-text">入侵手段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#被入侵原因"><span class="nav-number">3.2.</span> <span class="nav-text">被入侵原因</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#上传漏洞的防御"><span class="nav-number">4.</span> <span class="nav-text">上传漏洞的防御</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#入侵角度分析"><span class="nav-number">4.1.</span> <span class="nav-text">入侵角度分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#防御的方法"><span class="nav-number">4.2.</span> <span class="nav-text">防御的方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#系统各阶段防御"><span class="nav-number">5.</span> <span class="nav-text">系统各阶段防御</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#系统开发阶段"><span class="nav-number">5.1.</span> <span class="nav-text">系统开发阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#系统运行阶段"><span class="nav-number">5.2.</span> <span class="nav-text">系统运行阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安全设备防御"><span class="nav-number">5.3.</span> <span class="nav-text">安全设备防御</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#漏洞防御实例"><span class="nav-number">6.</span> <span class="nav-text">漏洞防御实例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#文件类型判断"><span class="nav-number">6.1.</span> <span class="nav-text">文件类型判断</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">胡振洲</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.3</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.3"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+    <script type="text/javascript">
+    (function(){
+      var appid = 'cyt5yVFc6';
+      var conf = '862d348fdea048dde058283903dfe7bf';
+      var width = window.innerWidth || document.documentElement.clientWidth;
+      if (width < 960) {
+      window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){
+        window.changyan.api.config({appid:appid,conf:conf})});
+      }
+    })();
+    </script>
+    <script type="text/javascript" src="https://assets.changyan.sohu.com/upload/plugins/plugins.count.js"></script>
+  
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.3"></script>
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("VgdUzhN2zLs50JF6Fd2C1vqj-gzGzoHsz", "F3PJ8K5fuaEaqoQbCrXAUegI");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
